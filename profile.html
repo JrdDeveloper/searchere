@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account - Search Here</title>
+  <link rel="stylesheet" href="css/sss.css">
+  <!-- Ek CSS stilleri eklenebilir -->
+</head>
+
+<body>
+  <header>
+    <!-- Kullanıcının profil fotoğrafını göstermek için bir alan -->
+    <div class="profile-picture" id="profile-picture">
+  <!-- Profil fotoğrafı burada görüntülenecek veya varsayılan görsel -->
+</div>
+
+<!-- Çıkış yap butonu -->
+    <button id="logout-button" onclick="logout()">Logout</button>
+  </header>
+
+  <main>
+    <h1>My Account</h1>
+    <!-- Şifre ve e-posta adresi değiştirme formları -->
+    <form id="changePasswordForm">
+      <h2>Change Password</h2>
+      <div class="floating-label">
+        <input placeholder="New Password" type="password" name="newPassword" id="newPassword" autocomplete="off">
+        <label for="newPassword">New Password:</label>
+        <div class="icon">
+          <!-- Şifre ikonu SVG kodu -->
+          <!-- ... (SVG Icon Kodu) ... -->
+        </div>
+      </div>
+      <button type="button" onclick="changePassword()">Change Password</button>
+    </form>
+
+    <form id="changeEmailForm">
+      <h2>Change Email</h2>
+      <div class="floating-label">
+        <input placeholder="New Email" type="email" name="newEmail" id="newEmail" autocomplete="off">
+        <label for="newEmail">New Email:</label>
+        <div class="icon">
+          <!-- E-posta ikonu SVG kodu -->
+          <!-- ... (SVG Icon Kodu) ... -->
+        </div>
+      </div>
+      <button type="button" onclick="changeEmail()">Change Email</button>
+    </form>
+   <form id="uploadProfilePictureForm">
+      <input type="file" accept="image/*" id="profilePictureInput">
+      <button type="button" onclick="uploadProfilePicture()">Upload Profile Picture</button>
+    </form>
+  </main>
+
+  <footer>
+    <!-- Sayfa alt bilgisi -->
+  </footer>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script> <!-- Firebase Realtime Database için -->
+  <script>
+    const firebaseConfig = {
+  apiKey: "AIzaSyAvq8PM8I_D5nNWMu1OkEA1ceZvwlsF4Jw",
+  authDomain: "searchhere-78716.firebaseapp.com",
+  projectId: "searchhere-78716",
+  storageBucket: "searchhere-78716.appspot.com",
+  messagingSenderId: "103141611895",
+  appId: "1:103141611895:web:717a9e253f69533eeea972"
+};
+
+// Firebase'i başlat
+firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        // Kullanıcı oturum açmışsa devam et
+        console.log("Kullanıcı oturum açtı: " + user.uid);
+      } else {
+        // Kullanıcı oturum açmamışsa anasayfaya yönlendir
+        console.log("Kullanıcı oturum açmadı. Anasayfaya yönlendiriliyor...");
+        window.location.href = "index.html";
+      }
+    });
+
+
+    // Şifre değiştirme işlemi
+    function changePassword() {
+      var newPassword = document.getElementById("newPassword").value;
+
+      // Firebase ile şifre değiştirme işlemi gerçekleştirme
+      var user = firebase.auth().currentUser;
+
+      user.updatePassword(newPassword).then(function () {
+        // Şifre değiştirme başarılı
+        console.log("Şifre değiştirme başarılı");
+        alert("Password changed successfully.");
+      }).catch(function (error) {
+        // Şifre değiştirme sırasında hata oluştu
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log("Şifre değiştirme hatası: " + errorMessage);
+        alert("Error changing password: " + errorMessage);
+      });
+    }
+
+    // E-posta değiştirme işlemi
+    function changeEmail() {
+      var newEmail = document.getElementById("newEmail").value;
+
+      // Firebase ile e-posta değiştirme işlemi gerçekleştirme
+      var user = firebase.auth().currentUser;
+
+      user.updateEmail(newEmail).then(function () {
+        // E-posta değiştirme başarılı
+        console.log("E-posta değiştirme başarılı");
+        alert("Email changed successfully.");
+      }).catch(function (error) {
+        // E-posta değiştirme sırasında hata oluştu
+        var errorCode = fire.code;
+        var errorMessage = error.message;
+        console.log("E-posta değiştirme hatası: " + errorMessage);
+        alert("Error changing email: " + errorMessage);
+      });
+    }
+function uploadProfilePicture() {
+  var fileInput = document.getElementById("profilePictureInput");
+  var file = fileInput.files[0];
+  var user = firebase.auth().currentUser;
+  var storageRef = firebase.storage().ref();
+
+  // Kullanıcının UID'sini kullanarak bir klasör oluşturun ve eski dosyayı silin
+  var userFolderRef = storageRef.child("profilePictures/" + user.uid);
+
+  // Klasördeki tüm dosyaları listeleyin
+  userFolderRef.listAll().then(function (res) {
+    // Klasördeki tüm dosyaları alın
+    var files = res.items;
+
+    // Tüm dosyaları silin
+    var deletePromises = files.map(function (file) {
+      return file.delete();
+    });
+
+    // Tüm dosyalar silindiğinde yeni dosyayı yükleyin
+    Promise.all(deletePromises).then(function () {
+      // Eski dosyalar başarıyla silindi, şimdi yeni dosyayı yükleyin
+      var profilePictureRef = userFolderRef.child(file.name);
+
+      // Dosyayı Firebase Storage'a yüklemek için FileReader kullanın
+      var reader = new FileReader();
+
+      // Dosyayı okurken
+      reader.onload = function (e) {
+        var img = new Image();
+        img.src = e.target.result;
+
+        // Resmin boyutlarını kontrol edin
+        img.onload = function () {
+          var maxWidth = 750;
+          var maxHeight = 750;
+
+          if (img.width > maxWidth || img.height > maxHeight) {
+            // Resim belirtilen boyutlardan büyükse, hata göster
+            alert("Profile picture dimensions should be a maximum of 750x750 pixels.");
+            return;
+          }
+
+          // Dosyayı Firebase Storage'a yükleyin
+          profilePictureRef.put(file).then(function (snapshot) {
+            console.log("Profil fotoğrafı başarıyla yüklendi.");
+            alert("Profile picture uploaded successfully.");
+
+            // Profil fotoğrafının URL'sini alın
+            profilePictureRef.getDownloadURL().then(function (url) {
+              // Profil fotoğrafını görüntüleyin
+              displayProfilePicture(url);
+            }).catch(function (error) {
+              console.error("URL alınamadı: " + error);
+            });
+          }).catch(function (error) {
+            console.error("Yükleme hatası: " + error);
+            alert("Error uploading profile picture: " + error.message);
+          });
+        };
+      };
+
+      // Dosyayı okumayı başlatın
+      reader.readAsDataURL(file);
+    }).catch(function (error) {
+      console.error("Dosya silme hatası: " + error);
+      alert("Error deleting files: " + error.message);
+    });
+  }).catch(function (error) {
+    console.error("Klasördeki dosyalar alınamadı: " + error);
+  });
+}
+    // Profil fotoğrafını gösterme işlemi
+    function displayProfilePicture(profilePictureURL) {
+      var profilePicture = document.getElementById("profile-picture");
+      profilePicture.innerHTML = '<img src="' + profilePictureURL + '" alt="Profil Fotoğrafı">';
+    }
+
+
+
+// Firestore'dan kullanıcının profil fotoğrafı URL'sini alın ve gösterin
+function displayProfilePicture(profilePictureURL) {
+  var profilePicture = document.getElementById("profile-picture");
+  profilePicture.innerHTML = '<img src="' + profilePictureURL + '" alt="Profil Fotoğrafı">';
+}
+
+// Profil fotoğrafını gösterme işlemi
+function displayProfilePicture() {
+  var user = firebase.auth().currentUser;
+  var storageRef = firebase.storage().ref();
+
+  // Kullanıcının UID'sini kullanarak profili için benzersiz bir yol oluşturun
+  var userFolderRef = storageRef.child("profilePictures/" + user.uid);
+
+  // Klasördeki tüm dosyaları listeleyin
+  userFolderRef.listAll().then(function (res) {
+    // Klasördeki tüm dosyaları alın
+    var files = res.items;
+
+    // En son eklenen dosyayı bulmak için tarihe göre sıralayın
+    files.sort(function (a, b) {
+      return b.timeCreated - a.timeCreated;
+    });
+
+    // En son eklenen dosyanın URL'sini alın
+    files[0].getDownloadURL().then(function (url) {
+      // Profil fotoğrafını görüntüleyin
+      var profilePicture = document.getElementById("profile-picture");
+      profilePicture.innerHTML = '<img src="' + url + '" alt="Profil Fotoğrafı">';
+    }).catch(function (error) {
+      console.error("Profil fotoğrafı alınamadı: " + error);
+
+      // Varsayılan profil fotoğrafını göstermek için bir URL kullanabilirsiniz
+      var defaultProfilePictureURL = "https://cdn.glitch.global/093cecaf-360f-4a9d-a086-7cf74fb9217d/pngwing.com.png?v=1695671851321";
+      var profilePicture = document.getElementById("profile-picture");
+      profilePicture.innerHTML = '<img src="' + defaultProfilePictureURL + '" alt="Profil Fotoğrafı">';
+    });
+  }).catch(function (error) {
+    console.error("Klasördeki dosyalar alınamadı: " + error);
+  });
+}
+
+// Sayfa yüklendiğinde veya kullanıcı oturum açtığında profil fotoğrafını göster
+window.addEventListener("load", function () {
+  firebase.auth().onAuthStateChanged(function (user) {
+    if (user) {
+      // Kullanıcı oturum açtığında profil fotoğrafını göster
+      displayProfilePicture();
+    } else {
+      // Kullanıcı oturum açmamışsa anasayfaya yönlendir
+      console.log("Kullanıcı oturum açmadı. Anasayfaya yönlendiriliyor...");
+      window.location.href = "index.html";
+    }
+  });
+});
+    // Çıkış yapma işlemi
+    function logout() {
+      firebase.auth().signOut().then(function () {
+        // Çıkış başarılı
+        console.log("Çıkış başarılı");
+        window.location.href = "index.html"; // Çıkış yaptıktan sonra anasayfaya yönlendir
+      }).catch(function (error) {
+        // Çıkış sırasında hata oluştu
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log("Çıkış hatası: " + errorMessage);
+        alert("Error logging out: " + errorMessage);
+      });
+    }
+  </script>
+</body>
+
+</html>

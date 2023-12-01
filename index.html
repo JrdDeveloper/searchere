@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Search Here</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css"
+    integrity="sha384-9+PGKSqjRdkeAU7Eu4nkJU8RFaH8ace8HGXnkiKMP9I9Te0GJ4/km3L1Z8tXigpG" crossorigin="anonymous" />
+</head>
+
+<body>
+  <div id="content" class="container" style="display: none;">
+<div class="profile-picture" id="profile-picture">
+  <!-- Profil fotoğrafı burada görüntülenecek veya varsayılan görsel -->
+</div>
+    <!-- logout-button -->
+    <div class="row mt-3">
+      <div class="col-md-12 text-center">
+        <!-- <img src="logo_url" alt="Logo" id="logo"> -->
+      </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="row mt-5">
+      <div class="col-md-6 offset-md-2">
+        <input type="text" id="search-box" class="form-control" placeholder="Ara..." />
+      </div>
+      <div class="col-md-2">
+        <select id="platform" class="form-control">
+          <option value="github">GitHub</option>
+          <option value="reddit">Reddit</option>
+          <option value="npmjs">NpmJs</option>
+          <option value="stackoverflow">StackOverflow</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select id="filter" class="form-control">
+          <option value="name">İsim</option>
+          <option value="description">Açıklama</option>
+          <option value="author">Yazar</option>
+        </select>
+
+        <div id="loading" class="text-center mt-3" style="display: none">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sonuçlar ve Sayfalama -->
+    <div id="results" class="mt-3" style="display: none"></div>
+    <div class="row mt-3">
+      <div class="col-md-12 text-center">
+        <!-- Mesaj kutusu -->
+      </div>
+    </div>
+    <!-- Hata Mesaj-->
+    <div class="row mt-3" id="error-message" style="display: none">
+      <div class="col-md-12 text-center">
+        <div class="alert alert-danger" role="alert">
+          Arama Sonucu Bulunamadı!
+        </div>
+      </div>
+    </div>
+    <!-- Sayfalama Düğmeleri -->
+    <div class="row mt-3" id="pagination-buttons" style="display: none">
+      <div class="col-md-12 text-center">
+        <button id="prev-page" class="btn btn-primary">Önceki Sayfa</button>
+        <button id="next-page" class="btn btn-primary">Sonraki Sayfa</button>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div id="message-box">
+      <br />
+      <p style="text-align: center">
+        Are you looking for an account?
+        <a href="accountfinder.html" id="link-to-external-site">Account Finder</a>
+      </p>
+    </div>
+  </div>
+  <script src="js/script.js"></script>
+  <link rel="stylesheet" href="css/index.css" />
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script> <!-- Firebase Realtime Database için -->
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAvq8PM8I_D5nNWMu1OkEA1ceZvwlsF4Jw",
+      authDomain: "searchhere-78716.firebaseapp.com",
+      projectId: "searchhere-78716",
+      storageBucket: "searchhere-78716.appspot.com",
+      messagingSenderId: "103141611895",
+      appId: "1:103141611895:web:717a9e253f69533eeea972"
+    };
+
+    // Firebase'i başlatın
+    firebase.initializeApp(firebaseConfig);
+
+    // Giriş yapma işlemi
+    function login() {
+      firebase.auth().signInAnonymously()
+        .then(function (userCredential) {
+          // Giriş başarılı olduğunda içeriği göster
+          document.getElementById("content").style.display = "block";
+          document.getElementById("login-button").style.display = "none";
+          document.getElementById("logout-button").style.display = "block";
+        })
+        .catch(function (error) {
+          console.log(error.message);
+        });
+    }
+
+    // Kullanıcı oturumu açtıysa içeriği göster
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (user) {
+        document.getElementById("content").style.display = "block";
+        document.getElementById("login-button").style.display = "none";
+        document.getElementById("logout-button").style.display = "block";
+      }
+    });
+
+// Profil fotoğrafını gösterme işlemi
+function displayProfilePicture() {
+  var user = firebase.auth().currentUser;
+  var storageRef = firebase.storage().ref();
+
+  // Kullanıcının UID'sini kullanarak profili için benzersiz bir yol oluşturun
+  var userFolderRef = storageRef.child("profilePictures/" + user.uid);
+
+  // Klasördeki tüm dosyaları listeleyin
+  userFolderRef.listAll().then(function (res) {
+    // Klasördeki tüm dosyaları alın
+    var files = res.items;
+
+    // En son eklenen dosyayı bulmak için tarihe göre sıralayın
+    files.sort(function (a, b) {
+      return b.timeCreated - a.timeCreated;
+    });
+
+    // En son eklenen dosyanın URL'sini alın
+    files[0].getDownloadURL().then(function (url) {
+      // Profil fotoğrafını görüntüleyin
+      var profilePicture = document.getElementById("profile-picture");
+      profilePicture.innerHTML = '<img src="' + url + '" alt="Profil Fotoğrafı">';
+    }).catch(function (error) {
+      console.error("Profil fotoğrafı alınamadı: " + error);
+
+      // Varsayılan profil fotoğrafını göstermek için bir URL kullanabilirsiniz
+      var defaultProfilePictureURL = "https://cdn.glitch.global/093cecaf-360f-4a9d-a086-7cf74fb9217d/pngwing.com.png?v=1695671851321";
+      var profilePicture = document.getElementById("profile-picture");
+      profilePicture.innerHTML = '<img src="' + defaultProfilePictureURL + '" alt="Profil Fotoğrafı">';
+    });
+  }).catch(function (error) {
+    console.error("Klasördeki dosyalar alınamadı: " + error);
+  });
+}
+
+// Sayfa yüklendiğinde veya kullanıcı oturum açtığında profil fotoğrafını göster
+window.addEventListener("load", function () {
+  firebase.auth().onAuthStateChanged(function (user) {
+    if (user) {
+      // Kullanıcı oturum açtığında profil fotoğrafını göster
+      displayProfilePicture();
+    }
+  });
+});
+
+    function signOut() {
+      firebase.auth().signOut()
+        .then(function () {
+          // Oturum kapatma başarılı
+          document.getElementById("content").style.display = "none";
+          document.getElementById("logout-button").style.display = "none";
+          document.getElementById("login-button").style.display = "block";
+          console.log("Oturum Kapatma Başarılı");
+        })
+        .catch(function (error) {
+          // Oturum kapatma sırasında bir hata oluştu
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          console.log("Oturum Kapatma Hatası: " + errorMessage);
+        });
+    }
+
+    // Kullanıcı oturumu kontrolü
+    firebase.auth().onAuthStateChanged(function (user) {
+      if (!user) {
+        // Kullanıcı oturumu yoksa login.html adresine yönlendir
+        window.location.href = "login.html";
+      }
+    });
+
+  </script>
+</body>
+
+</html>

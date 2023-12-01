@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="css/test.css">
+  <title>Özelleştirilebilir Pano</title>
+</head>
+
+<body>
+  <div class="container">
+    <div id="pano" class="pano" ondragover="allowDrop(event)" ondrop="drop(event)">
+      <!-- Kutular burada oluşturulacak -->
+    </div>
+    <div id="toolbox" class="toolbox">
+      <div class="tool" data-tool="box" draggable="true" ondragstart="drag(event)">Görev Kutusu</div>
+      <!-- Diğer eklentiler burada eklenebilir -->
+    </div>
+    <div id="taskList" class="task-list">
+      <!-- Görevlerin listesi burada görüntülenecek -->
+    </div>
+  </div>
+  <script src="js/test.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css"
+    integrity="sha384-9+PGKSqjRdkeAU7Eu4nkJU8RFaH8ace8HGXnkiKMP9I9Te0GJ4/km3L1Z8tXigpG" crossorigin="anonymous" />
+  <title>Hesap Bulma</title>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Hesap Bulma</h1>
+    <form id="search-form">
+      <input type="text" id="nick-input" placeholder="Nick girin..." />
+      <button type="submit">Ara</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const searchForm = document.getElementById("search-form");
+    const nickInput = document.getElementById("nick-input");
+    const resultDiv = document.getElementById("result");
+
+    searchForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      const nick = nickInput.value.trim();
+      if (nick !== "") {
+        const links = generateLinks(nick);
+        displayLinks(links);
+      } else {
+        resultDiv.innerHTML = "Lütfen bir nick girin.";
+      }
+    });
+
+    function generateLinks(nick) {
+      const links = [];
+      const sites = [
+        {
+          name: "İnstagram",
+          url: "https://www.instagram.com/",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/instagram.png?v=1688805624428",
+        },
+        {
+          name: "Twitter",
+          url: "https://www.twitter.com/",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/twitter.png?v=1688806093288",
+        },
+        {
+          name: "SoundCloud",
+          url: "https://soundcloud.com/",
+          icon: "https://www.shareicon.net/data/512x512/2015/08/03/79314_soundcloud_512x512.png",
+        },
+        {
+          name: "Facebook",
+          url: "https://www.facebook.com/",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/facebook.png?v=1688806374759",
+        },
+        {
+          name: "Reddit",
+          url: "https://www.reddit.com/u/",
+          icon: "https://cdn.icon-icons.com/icons2/2428/PNG/512/reddit_black_logo_icon_147088.png",
+        },
+        {
+          name: "Tiktok",
+          url: "https://www.tiktok.com/@",
+          icon: "https://w7.pngwing.com/pngs/75/782/png-transparent-tiktok-flat-black-social-media-flat-black-icon.png",
+        },
+        {
+          name: "Pinterest",
+          url: "https://pinterest.com/",
+          icon: "https://i.pinimg.com/originals/9a/ff/b7/9affb7b0d385944dfa51952e82956d62.jpg",
+        },
+        {
+          name: "Glitch",
+          url: "https://glitch.com/@",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/indir.png?v=1688810874427",
+        },
+        {
+          name: "Steam",
+          url: "https://steamcommunity.com/id/",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/pngegg.png?v=1688810619180",
+        },
+        {
+          name: "Spotify",
+          url: "https://open.spotify.com/user/",
+          icon: "https://www.citypng.com/public/uploads/preview/spotify-black-logo-symbol-icon-png-image-11661570388rokrlbxn2n.png",
+        },
+        {
+          name: "Patreon",
+          url: "https://www.patreon.com/",
+          icon: "https://cdn.icon-icons.com/icons2/2428/PNG/512/patreon_black_logo_icon_147098.png",
+        },
+        {
+          name: "Youtube",
+          url: "https://www.youtube.com/@",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/pngwing.com.png?v=1690036564847",
+        },
+        {
+          name: "Kick",
+          url: "https://kick.com/",
+          icon: "https://cdn.glitch.global/96a45d1e-1f32-4f21-a1e2-bffafb681eea/d-photoaidcom-cropped.png?v=1688807109011",
+        },
+        {
+          name: "Roblox",
+          url: "https://www.roblox.com/user.aspx?username=",
+          icon: "https://www.citypng.com/public/uploads/preview/-416066658478hq0ihnfkw.png",
+        },
+        {
+          name: "Github",
+          url: "https://www.github.com/",
+          icon: "https://cdn-icons-png.flaticon.com/512/25/25231.png",
+        },
+      ];
+
+      for (let i = 0; i < sites.length; i++) {
+        const url = `${sites[i].url}${encodeURIComponent(nick)}`;
+        links.push({name: sites[i].name, url: url, icon: sites[i].icon});
+      }
+
+      return links;
+    }
+
+    function displayLinks(links) {
+      resultDiv.innerHTML = "";
+
+      if (links.length > 0) {
+        const ul = document.createElement("ul");
+
+        for (let i = 0; i < links.length; i++) {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.href = links[i].url;
+          a.target = "_blank";
+
+          const icon = document.createElement("img");
+          icon.src = links[i].icon;
+          icon.alt = links[i].name;
+          icon.classList.add("icon");
+          a.appendChild(icon);
+
+          const span = document.createElement("span");
+          span.textContent = links[i].name;
+          a.appendChild(span);
+
+          li.appendChild(a);
+          ul.appendChild(li);
+        }
+
+        resultDiv.appendChild(ul);
+      } else {
+        resultDiv.innerHTML = "Sonuç bulunamadı.";
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      width: 70%;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button[type="submit"] {
+      padding: 10px 20px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #555;
+    }
+
+    #result {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    a {
+      text-decoration: none;
+      color: #333;
+      transition: color 0.3s ease;
+    }
+
+    a:hover {
+      color: #555;
+    }
+
+    .icon {
+      width: 22px;
+      height: 22px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+
+    span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</body>
+
+</html>
